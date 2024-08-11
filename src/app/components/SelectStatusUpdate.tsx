@@ -1,47 +1,53 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Todo } from "../types";
 import { supabase } from "../utils/supabaseClient";
 import { getStatusName } from "../utils/utils";
-import { NextResponse } from "next/server";
-import { useRouter } from "next/navigation";
+import { useRecoilState } from "recoil";
+import { todoListState } from "../recoil/atom";
 
 type SelectStatusUpdateProps = {
   todo: Todo;
 };
 
 const SelectStatusUpdate = ({ todo }: SelectStatusUpdateProps) => {
-  const router = useRouter();
   const [todoStatus, setTodoStatus] = useState(todo.status.id);
+  const [todoList, setTodoList] = useRecoilState(todoListState);
 
-  useEffect(() => {
-    const updateStatus = async () => {
-      const { error } = await supabase
-        .from("todoList")
-        .update({
-          status: {
-            id: todoStatus,
-            name: getStatusName(todoStatus),
-          },
-        })
-        .eq("id", todo.id);
+  const handleStatusChange = async (newStatus: string) => {
+    setTodoStatus(newStatus);
 
-      if (error) {
-        return NextResponse.json(error);
-      }
+    const { data, error } = await supabase
+      .from("todoList")
+      .update({
+        status: {
+          id: newStatus,
+          name: getStatusName(newStatus),
+        },
+      })
+      .eq("id", todo.id)
+      .select();
 
-      router.push("/");
-      router.refresh();
-    };
-    updateStatus();
-  }, [todoStatus]);
+    if (error) {
+      console.error("Error updating status:", error);
+      return;
+    }
+
+    setTodoList((currentTodoList) =>
+      currentTodoList.map((currentTodo) =>
+        currentTodo.id === todo.id
+          ? { ...currentTodo, status: data[0].status }
+          : currentTodo
+      )
+    );
+  };
 
   return (
     <select
-      defaultValue={todoStatus}
+      value={todoStatus}
       className="p-2 border rounded-lg"
-      onChange={(e) => setTodoStatus(e.target.value)}
+      onChange={(e) => handleStatusChange(e.target.value)}
     >
       <option value="notstarted">未着手</option>
       <option value="progress">進行中</option>
