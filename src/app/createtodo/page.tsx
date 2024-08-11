@@ -3,10 +3,13 @@
 import { nanoid } from "nanoid";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useRecoilState } from "recoil";
+import { todoListState } from "../recoil/atom";
 
 const Createtodo = () => {
   const router = useRouter();
   const [todoText, setTodoText] = useState("");
+  const [todoList, setTodoList] = useRecoilState(todoListState);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -14,16 +17,29 @@ const Createtodo = () => {
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+    const newTodo = {
+      id: nanoid(),
+      text: todoText,
+    };
+
     const res = await fetch(`${API_URL}/api/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        id: nanoid(),
-        text: todoText,
-      }),
+      body: JSON.stringify(newTodo),
     });
+
+    const result = await res.json();
+
+    console.log(result);
+
+    if (!result || result.length === 0) {
+      console.error("No data returned from the server:", result);
+      return;
+    }
+
+    setTodoList((currentTodoList) => [...currentTodoList, result[0]]);
 
     setTodoText("");
     router.push("/");

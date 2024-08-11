@@ -1,14 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import React from "react";
+import { useRecoilState } from "recoil";
+import { todoListState } from "../recoil/atom";
 
 type DeleteButtonProps = {
   id: string;
 };
 
 const DeleteButton = ({ id }: DeleteButtonProps) => {
-  const router = useRouter();
+  const [todoList, setTodoList] = useRecoilState(todoListState);
 
   const handleDelete = async () => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -20,8 +21,7 @@ const DeleteButton = ({ id }: DeleteButtonProps) => {
       body: JSON.stringify({ id }),
     });
 
-    router.push("/");
-    router.refresh();
+    setTodoList((currentTodo) => currentTodo.filter((todo) => todo.id !== id));
   };
 
   return (

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "./Header";
 import Footer from "./Footer";
+import { RecoilProvider } from "./recoil/RecoilProvider";
 
 export const metadata: Metadata = {
   title: "TODO Next App",
@@ -16,10 +17,12 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="bg-slate-300 max-w-screen-md md:mx-auto m-6 ">
-        <Header />
-        <main className="px-2 py-2">{children}</main>
+        <RecoilProvider>
+          <Header />
+          <main className="px-2 py-2">{children}</main>
 
-        <Footer />
+          <Footer />
+        </RecoilProvider>
       </body>
     </html>
   );

@@ -3,12 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { Todo } from "../types";
 import SingleTodo from "./SingleTodo";
-import { useRecoilValue } from "recoil";
-import { sortStates } from "../recoil/atom";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { sortStates, todoListState } from "../recoil/atom";
 
 const TodoList = () => {
   const selectedStatus = useRecoilValue(sortStates);
-  const [todoList, setTodoList] = useState<Todo[]>([]);
+  const [todoList, setTodoList] = useRecoilState(todoListState);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -22,7 +22,7 @@ const TodoList = () => {
       setTodoList(todoDatas);
     };
     fetchData();
-  }, [selectedStatus]);
+  }, [selectedStatus, setTodoList]);
 
   const sortedTodos = todoList.filter((todo) => {
     return selectedStatus === "all" ? true : todo.status.id === selectedStatus;
